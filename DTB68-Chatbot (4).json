@@ -1,0 +1,602 @@
+{
+  "name": "DTB68-Chatbot",
+  "nodes": [
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        1440,
+        224
+      ],
+      "id": "6c9ac44f-f200-4f57-ad7c-c19be8bcdcba",
+      "name": "When clicking ‘Execute workflow’"
+    },
+    {
+      "parameters": {
+        "resource": "fileFolder",
+        "filter": {
+          "folderId": {
+            "__rl": true,
+            "value": "1Ll5EOewAXjfQewNdOknkZZBUApC7LdI_",
+            "mode": "list",
+            "cachedResultName": "n8n-workflow",
+            "cachedResultUrl": "https://drive.google.com/drive/folders/1Ll5EOewAXjfQewNdOknkZZBUApC7LdI_"
+          }
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        1648,
+        224
+      ],
+      "id": "6cd1498c-7323-4647-af9b-3b50f5e8448f",
+      "name": "Search files and folders",
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "R59i8wyIiNE1qFqY",
+          "name": "Google Drive account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "download",
+        "fileId": {
+          "__rl": true,
+          "value": "={{ $json.id }}",
+          "mode": "id"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        1856,
+        224
+      ],
+      "id": "0412e9d3-4a17-4fb0-b4ff-8191a0bcec42",
+      "name": "Download file",
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "R59i8wyIiNE1qFqY",
+          "name": "Google Drive account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "mode": "insert",
+        "pineconeIndex": {
+          "__rl": true,
+          "value": "dtb68-chatbot",
+          "mode": "list",
+          "cachedResultName": "dtb68-chatbot"
+        },
+        "embeddingBatchSize": 1,
+        "options": {
+          "pineconeNamespace": "dtb-data"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.vectorStorePinecone",
+      "typeVersion": 1.3,
+      "position": [
+        2064,
+        224
+      ],
+      "id": "eb40c2a0-34df-463c-8476-62b05bb247bb",
+      "name": "Pinecone Vector Store",
+      "credentials": {
+        "pineconeApi": {
+          "id": "BO9xv8KFzUpl7EyR",
+          "name": "PineconeApi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "modelName": "models/gemini-embedding-001"
+      },
+      "type": "@n8n/n8n-nodes-langchain.embeddingsGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        1936,
+        432
+      ],
+      "id": "14c3017e-3bfa-4730-b68f-241c5136e2a1",
+      "name": "Embeddings Google Gemini",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "kMixmekxurnCjVw5",
+          "name": "API-1(panudech1419@gmail.com)"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "dataType": "binary",
+        "textSplittingMode": "custom",
+        "options": {
+          "metadata": {
+            "metadataValues": [
+              {
+                "name": "Filename",
+                "value": "={{ $json.name }}"
+              }
+            ]
+          }
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.documentDefaultDataLoader",
+      "typeVersion": 1.1,
+      "position": [
+        2112,
+        432
+      ],
+      "id": "bde21be4-a5c0-4989-9a29-e9da1ee9ec41",
+      "name": "Default Data Loader"
+    },
+    {
+      "parameters": {
+        "chunkSize": 600,
+        "chunkOverlap": 120,
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.textSplitterRecursiveCharacterTextSplitter",
+      "typeVersion": 1,
+      "position": [
+        2144,
+        592
+      ],
+      "id": "36414136-6f5a-4935-a823-7ad9f6542629",
+      "name": "Recursive Character Text Splitter"
+    },
+    {
+      "parameters": {
+        "pollTimes": {
+          "item": [
+            {
+              "mode": "everyMinute"
+            }
+          ]
+        },
+        "triggerOn": "specificFolder",
+        "folderToWatch": {
+          "__rl": true,
+          "value": "1Ll5EOewAXjfQewNdOknkZZBUApC7LdI_",
+          "mode": "list",
+          "cachedResultName": "n8n-workflow",
+          "cachedResultUrl": "https://drive.google.com/drive/folders/1Ll5EOewAXjfQewNdOknkZZBUApC7LdI_"
+        },
+        "event": "fileCreated",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleDriveTrigger",
+      "typeVersion": 1,
+      "position": [
+        1648,
+        416
+      ],
+      "id": "52d66db0-c524-4a3a-b4c3-6698f520c2fc",
+      "name": "Google Drive Trigger",
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "R59i8wyIiNE1qFqY",
+          "name": "Google Drive account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "line-chatbot",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        2688,
+        240
+      ],
+      "id": "4b87fae7-e4d5-42a0-a899-51953724b758",
+      "name": "Webhook",
+      "webhookId": "61cbab44-3152-4b22-b166-89c360174685"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.massage }}",
+        "options": {
+          "systemMessage": "# Role & Persona\nคุณคือ \"ผู้ช่วยดิจิทัล AI\" ประจำหลักสูตร เทคโนโลยีดิจิทัลเพื่อธุรกิจ (DTB) คณะ ICT มหาวิทยาลัยศิลปากร (หลักสูตรปรับปรุง 2568)\nหน้าที่: ช่วยเหลือข้อมูลวิชาการและงานธุรการ โดยเน้นคำตอบที่สั้น กระชับ อ่านง่ายบนหน้าจอมือถือ (LINE)\n\n# 🛑 Critical Rules (กฎเหล็ก):\n1. Context Driven Only: ตอบคำถามโดยอิงจากข้อมูลในเอกสารที่ค้นหาเจอ 100% ห้ามเดา ห้ามใช้ความรู้นอก ถ้าไม่พบให้ตอบว่า \"ขออภัยครับ ไม่พบข้อมูลในระบบ\"\n2. Strict Tool Usage: ต้องใช้ Search Tool ค้นหาข้อมูลรายวิชาและแบบฟอร์มเสมอ\n3. Citation: ต้องระบุ \"ชื่อไฟล์\" อ้างอิงท้ายข้อความเสมอ (เช่น 📄 อ้างอิง: คำร้องทั่วไป.pdf)\n4. Raw URLs: ลิงก์ต้องเป็น URL ดิบ วางแยกบรรทัด ห้ามทำ Hyperlink หรือ Markdown Link เด็ดขาด\n\n# 📱 Output Format (รูปแบบการตอบสำหรับ LINE ผ่าน n8n):\n1. ห้ามใช้ MARKDOWN ทุกชนิด: ห้ามใช้เครื่องหมายดอกจัน (**) ทำตัวหนา, ห้ามใช้ (#) ทำหัวข้อ และ **ห้ามใช้ตาราง (|---|) เด็ดขาด** เพราะ LINE ไม่รองรับ\n2. ใช้ Emoji นำหน้าหัวข้อแทน เพื่อความสวยงามและแบ่งสัดส่วนเนื้อหา (เช่น 📌, 📚, 📥)\n3. การแสดงรายวิชา: ห้ามทำเป็นตาราง ให้ใช้รูปแบบ List บรรทัดละ 1 วิชาแทน\n4. ความยาว: ตอบสั้น เข้าเรื่องทันที ตัดคำนำประดิษฐ์ประดอยทิ้งให้หมด ไม่เกิน 6-8 บรรทัดต่อข้อความ\n\n# 📝 ตัวอย่างการตอบ (Few-Shot Examples):\n\nUser: \"ยื่นคำร้องทั่วไปทำไง\"\nAssistant:\n📌 ขั้นตอนยื่นคำร้องทั่วไป\n- กรอกข้อมูลในแบบฟอร์มให้ครบ\n- แนบหลักฐาน (ถ้ามี)\n- ยื่นที่งานธุรการ\n\n📥 ลิงก์ดาวน์โหลดฟอร์ม:\nhttps://drive.google.com/file/d/xxxx\n📄 อ้างอิง: คำร้อง-ทั่วไป.pdf\n\nUser: \"ปี 1 เทอม 1 เรียนวิชาอะไรบ้าง?\"\nAssistant:\n📚 แผนการเรียน ปี 1 เทอม 1 (หลักสูตร 68)\n- 080103001 English for Comm. (3 นก.)\n- 080xxxxxx Design Thinking (3 นก.)\n- 080xxxxxx Programming 1 (3 นก.)\n\n📄 อ้างอิง: เล่มหลักสูตร-DTB68.pdf\n(ต้องการรายละเอียดวิชาไหน พิมพ์รหัสหรือชื่อวิชาถามได้เลยครับ)"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3,
+      "position": [
+        3120,
+        240
+      ],
+      "id": "ccdcff69-b8a6-4aee-9379-49573d2672e5",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        2992,
+        448
+      ],
+      "id": "91c7da08-d71b-4b1f-98d0-70cda5ceb06b",
+      "name": "Google Gemini Chat Model",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "kMixmekxurnCjVw5",
+          "name": "API-1(panudech1419@gmail.com)"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "mode": "raw",
+        "jsonOutput": "={\n  \"user_id\": {{ JSON.stringify($json.body.events[0].source.userId) }},\n  \"sender_id\":{{ JSON.stringify($json.body.events[0].replyToken) }},\n  \"massage\":{{ JSON.stringify($json.body.events[0].message.text) }}\n} ",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        2896,
+        240
+      ],
+      "id": "d86bbb10-f2b3-48d9-a4f7-e1d39ab89a68",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $('Edit Fields').item.json.user_id }}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        3136,
+        448
+      ],
+      "id": "dff74f19-8d4d-41ea-91dd-0d0f4d4cd735",
+      "name": "Simple Memory"
+    },
+    {
+      "parameters": {
+        "description": "ฐานข้อมูลครบวงจรของหลักสูตรเทคโนโลยีดิจิทัลเพื่อธุรกิจ (DTB) ประกอบด้วย:\n1. ข้อมูลหลักสูตรปรับปรุง 2568 (Curriculum 2025): รายละเอียดรายวิชา, รหัสวิชา, หน่วยกิต, แผนการเรียน, และอาชีพที่รองรับ\n2. แบบฟอร์มคำร้องต่างๆ (Student Forms): ข้อมูลเกี่ยวกับคำร้องทั่วไป, คำร้องขอลงทะเบียนเพิ่ม/ถอน/ล่าช้า, การถอนรายวิชา (W), และคำร้องอื่นๆ\n3. คู่มือนักศึกษาและระเบียบการ (Manuals)\n4. คำถามที่พบบ่อย (FAQ): ข้อมูลคำถามที่พบบ่อยเกี่ยวกับหลักสูตร ICT ธุรกิจ, การลงทะเบียนเรียน (Reg), การคิดเกรด GPA, กิจกรรมและชั่วโมงกิจกรรม, สถานที่และสิ่งอำนวยความสะดวก, การติดต่อหน่วยงาน, การฝึกงานและอาชีพ, ค่าเทอมและค่าใช้จ่าย, หอพักและที่พัก\n**คำสั่ง:** จงใช้เครื่องมือนี้เสมอ เมื่อผู้ใช้ถามคำถามเกี่ยวกับ หลักสูตร, รายวิชา, การเรียน, หรือขั้นตอนการยื่นคำร้องต่างๆ รวมไปถึงคำถามที่พบบ่อย หรือ FAQ ในทุกหมวดคำถามทั้งหมด",
+        "topK": 100
+      },
+      "type": "@n8n/n8n-nodes-langchain.toolVectorStore",
+      "typeVersion": 1.1,
+      "position": [
+        3280,
+        448
+      ],
+      "id": "30ade655-a13e-4528-b74d-ffc55d83fff5",
+      "name": "Answer questions with a vector store"
+    },
+    {
+      "parameters": {
+        "pineconeIndex": {
+          "__rl": true,
+          "value": "dtb68-chatbot",
+          "mode": "list",
+          "cachedResultName": "dtb68-chatbot"
+        },
+        "options": {
+          "pineconeNamespace": "dtb-data"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.vectorStorePinecone",
+      "typeVersion": 1.3,
+      "position": [
+        3072,
+        672
+      ],
+      "id": "ee6839ad-9705-4007-aac7-d6778dbad80c",
+      "name": "Pinecone Vector Store1",
+      "credentials": {
+        "pineconeApi": {
+          "id": "BO9xv8KFzUpl7EyR",
+          "name": "PineconeApi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "modelName": "models/gemini-embedding-001"
+      },
+      "type": "@n8n/n8n-nodes-langchain.embeddingsGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        2992,
+        880
+      ],
+      "id": "f95408c5-56b6-4b76-9886-a70b700524c2",
+      "name": "Embeddings Google Gemini1",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "kMixmekxurnCjVw5",
+          "name": "API-1(panudech1419@gmail.com)"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        3392,
+        672
+      ],
+      "id": "ca38f859-0789-4eea-bd9d-0181ff48a4c1",
+      "name": "Google Gemini Chat Model1",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "kMixmekxurnCjVw5",
+          "name": "API-1(panudech1419@gmail.com)"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.line.me/v2/bot/message/reply",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpBearerAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {}
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"replyToken\": {{ JSON.stringify($('Edit Fields').item.json.sender_id) }},\n  \"messages\": [\n    {\n      \"type\": \"text\",\n      \"text\": {{ JSON.stringify($json.output) }}\n    }\n  ]\n}  ",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        3456,
+        240
+      ],
+      "id": "552eff0b-8fe0-46fa-adc7-3dbe885bc7e3",
+      "name": "HTTP Request",
+      "credentials": {
+        "httpBearerAuth": {
+          "id": "QyZ8LNHGC2IrigcG",
+          "name": "Bearer Auth account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "mode": "insert",
+        "tableName": {
+          "__rl": true,
+          "value": "documents",
+          "mode": "list",
+          "cachedResultName": "documents"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.vectorStoreSupabase",
+      "typeVersion": 1.3,
+      "position": [
+        1744,
+        880
+      ],
+      "id": "0ab31182-09d5-4c86-8811-ef01df03e085",
+      "name": "Supabase Vector Store",
+      "credentials": {
+        "supabaseApi": {
+          "id": "jy1McZcHMS5bMoXG",
+          "name": "Supabase account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "When clicking ‘Execute workflow’": {
+      "main": [
+        [
+          {
+            "node": "Search files and folders",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Search files and folders": {
+      "main": [
+        [
+          {
+            "node": "Download file",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Download file": {
+      "main": [
+        [
+          {
+            "node": "Pinecone Vector Store",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Embeddings Google Gemini": {
+      "ai_embedding": [
+        [
+          {
+            "node": "Pinecone Vector Store",
+            "type": "ai_embedding",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Default Data Loader": {
+      "ai_document": [
+        [
+          {
+            "node": "Pinecone Vector Store",
+            "type": "ai_document",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Recursive Character Text Splitter": {
+      "ai_textSplitter": [
+        [
+          {
+            "node": "Default Data Loader",
+            "type": "ai_textSplitter",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Drive Trigger": {
+      "main": [
+        [
+          {
+            "node": "Download file",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Answer questions with a vector store": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Pinecone Vector Store1": {
+      "ai_vectorStore": [
+        [
+          {
+            "node": "Answer questions with a vector store",
+            "type": "ai_vectorStore",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Embeddings Google Gemini1": {
+      "ai_embedding": [
+        [
+          {
+            "node": "Pinecone Vector Store1",
+            "type": "ai_embedding",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model1": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Answer questions with a vector store",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "versionId": "0f93390c-d97c-4303-87e7-4077803dfc36",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "40b9edfa212923efe24dae4b9dead66499338c7e86091ffb240ce2b5a92724f2"
+  },
+  "id": "9pJMv13KTyOJrgwAUR817",
+  "tags": []
+}
