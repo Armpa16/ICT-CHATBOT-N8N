@@ -1,7 +1,7 @@
 # 🤖 ICT-CHATBOT-N8N
 
 <img width="1863" height="811" alt="สกรีนช็อต 2026-02-21 014342" src="https://github.com/user-attachments/assets/d57480b3-b56b-4a3f-9d07-a4e25514b330" />
-
+<img width="1087" height="603" alt="สกรีนช็อต 2026-02-21 020120" src="https://github.com/user-attachments/assets/3c8a3ec0-8aba-4d1f-a824-d01d920aaa05" />
 
 > **ระบบแชทบอทตอบคำถามผ่าน Line OA**
 > 
